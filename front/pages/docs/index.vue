@@ -5,7 +5,6 @@
         <div class="item-title">{{ doc.title }}</div>
         <div class="item-contain">
           <div class="contain-doc" v-for="(item, index) in doc.collection" :key="index">
-            <!-- <div class="doc-icon"></div> -->
             <span class="doc-title text-limit">&nbsp;&nbsp;{{ item.name }}&nbsp;&nbsp;</span>
             <div class="doc-title-hover text-limit">
               <div class="doc-title-hover-icon"></div>
