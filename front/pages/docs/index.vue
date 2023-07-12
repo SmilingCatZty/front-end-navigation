@@ -18,7 +18,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
 import { list } from './data'
 
 const docList = list
@@ -84,10 +83,11 @@ const docList = list
             transition: all 0.3s linear;
 
             .doc-title-hover-icon {
+              left: 0;
               width: 8px;
               height: 30px;
               background-color: rgba($color: #ef9797, $alpha: 1);
-              transition: all 0.7s linear;
+              transition: all 0.3s linear;
             }
           }
         }
