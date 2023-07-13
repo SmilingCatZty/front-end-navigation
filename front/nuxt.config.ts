@@ -2,8 +2,13 @@
 export default defineNuxtConfig({
   devtools: {
     enabled: true,
-    module: ['@vant/nuxt', '@nuxtjs/style-resources'],
+    module: ['@vant/nuxt', '@nuxtjs/axios', '@nuxtjs/style-resources'],
     vant: {}
+  },
+  runtimeConfig: {
+    public: {
+      baseUrl: 'http://localhost:5000/api/'
+    }
   },
   // 基础模块
   vite: {

@@ -15,6 +15,7 @@
     "nuxt": "^3.6.2"
   },
   "dependencies": {
+    "@nuxtjs/axios": "^5.13.6",
     "@nuxtjs/router": "^1.7.0",
     "@nuxtjs/style-resources": "^1.2.1",
     "@vueuse/core": "^10.2.1",

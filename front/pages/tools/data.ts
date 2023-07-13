@@ -1,6 +1,6 @@
-import { toolsInfoModel, ToolsModel } from '../../models/tools'
+import { toolsInfoModel, ToolsModel } from '../../models/tool.model'
 
-export const list = reactive<ToolsModel[]>([
+export const list = reactive([
   {
     type: 'often',
     name: '常用工具',

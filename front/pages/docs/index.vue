@@ -4,11 +4,11 @@
       <div class="box-item" v-for="doc in docList" :key="doc.type">
         <div class="item-title">{{ doc.title }}</div>
         <div class="item-contain">
-          <div class="contain-doc" v-for="(item, index) in doc.collection" :key="index">
-            <span class="doc-title text-limit">&nbsp;&nbsp;{{ item.name }}&nbsp;&nbsp;</span>
+          <div class="contain-doc" v-for="(item, index) in doc.collection" :key="item.doc_key" @click="viewDoc(item.doc_link)">
+            <span class="doc-title text-limit">&nbsp;&nbsp;{{ item.doc_name }}&nbsp;&nbsp;</span>
             <div class="doc-title-hover text-limit">
               <div class="doc-title-hover-icon"></div>
-              &nbsp;&nbsp;{{ item.name }}&nbsp;&nbsp;<span style="width: 20px"></span>
+              &nbsp;&nbsp;{{ item.doc_name }}&nbsp;&nbsp;<span style="width: 20px"></span>
             </div>
           </div>
         </div>
@@ -18,9 +18,29 @@
 </template>
 
 <script lang="ts" setup>
-import { list } from './data'
+import { DocsModel } from '~/models/doc.model'
+import { docApi } from '~/server/api/docs/index'
 
-const docList = list
+let docList = ref<DocsModel[]>([])
+
+const viewDoc = (link: string) => {
+  window.open(link)
+}
+
+const getDocList = async () => {
+  try {
+    const { data, status } = await docApi.getDocList()
+    if (status === 200 && data) {
+      docList.value = data
+    }
+  } catch (error) {
+    console.error('doc-error', error)
+  }
+}
+
+onMounted(() => {
+  getDocList()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -36,13 +56,14 @@ const docList = list
 .docs {
   display: flex;
   justify-content: center;
-  // padding: $padding-box;
   .docs-box {
     width: 80%;
     border-radius: 15px;
     background-color: #fff;
-    padding: 0px $padding-box $padding-box $padding-box;
+    margin: 0px $padding-box $padding-box $padding-box;
+    padding-bottom: $padding-box;
     .box-item {
+      padding: 0px $padding-box 0 $padding-box;
       .item-title {
         font-size: 20px;
         font-weight: 600;
@@ -57,12 +78,12 @@ const docList = list
           display: flex;
           position: relative;
           align-items: center;
-          width: 15%;
+          width: 13%;
           height: 40px;
           line-height: 40px;
           font-size: 18px;
           padding: $padding-item;
-          
+
           .doc-icon {
             width: 8px;
             height: 21px;
@@ -92,6 +113,7 @@ const docList = list
           }
         }
         .contain-doc:hover {
+          cursor: pointer;
           .doc-title {
             display: none;
           }

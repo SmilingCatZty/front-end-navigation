@@ -9,7 +9,7 @@
           :class="curIndex === i ? 'active-box' : 'static-box'"
           @click="navHandler(i)"
         >
-          <dd>{{ tool.name }}</dd>
+          <dd class="text-limit">{{ tool.title }}</dd>
         </dl>
       </div>
     </div>
@@ -21,11 +21,16 @@
         :key="tool.type"
         @scroll="scrollhandler"
       >
-        <div class="contain-title">{{ tool.name }}</div>
+        <div class="contain-title">{{ tool.title }}</div>
         <div class="contain-content">
-          <div class="content-list" v-for="(item, i) in tool.collection" :key="item.name">
-            <img class="list-icon" :src="item.icon" alt="" />
-            <div class="list-name">{{ item.name }}</div>
+          <div
+            class="content-list"
+            v-for="(item, i) in tool.collection"
+            :key="item.tool_key"
+            @click="viewTool(item.tool_link)"
+          >
+            <img class="list-icon" :src="item.tool_icon" alt="" />
+            <div class="list-name">{{ item.tool_name }}</div>
           </div>
         </div>
       </div>
@@ -35,9 +40,8 @@
 
 <script lang="ts" setup>
 import { onMounted, defineProps as Prop } from 'vue'
-import { toolsInfoModel, ToolsModel } from '../../models/tools'
-import { useScroll } from '@vueuse/core'
-import { list } from './data'
+import { ToolsModel } from '~/models/tool.model'
+import { toolApi } from '~/server/api/tools'
 
 const props = defineProps({
   scrollTopPosition: String // 定义接收的 prop 类型
@@ -46,15 +50,28 @@ const props = defineProps({
 const curIndex = ref<number>(0)
 const toolRef = ref()
 const toolItemElements: number[] = []
-const toolsList: ToolsModel[] = list // 工具类型列表
+const toolsList = ref<ToolsModel[]>([]) // 工具类型列表
+
+const getToolList = async () => {
+  try {
+    const { status, data } = await toolApi.getToolList()
+    if (status === 200 && data) {
+      toolsList.value = data
+    }
+  } catch (error) {
+    console.error('tool-error', error)
+  }
+}
+
+const viewTool = (link: string) => {
+  window.open(link)
+}
 
 // 导航栏索引
 const navHandler = (index: number) => {
   curIndex.value = index
   const targetElement: any = document.getElementById('box' + index)
   const targetPosition: any = targetElement.offsetTop
-  console.log(targetPosition)
-
   // 滚动至目标位置
   window.scrollTo({
     top: targetPosition - 70,
@@ -66,12 +83,11 @@ const navHandler = (index: number) => {
 const scrollhandler = () => {
   const targetElement: any = document.querySelector('.tools')
   const targetPosition: any = targetElement.offsetTop
-  console.log('targetPosition', targetPosition)
 }
 
 // 记录第一次进入滚动位置
 const recordPosition = () => {
-  toolsList.map((item, i) => {
+  toolsList.value.map((item, i) => {
     const targetElement: any = document.getElementById('box' + i)
     const targetPosition: any = targetElement.offsetTop
     toolItemElements[i] = targetPosition
@@ -79,11 +95,21 @@ const recordPosition = () => {
 }
 
 onMounted(() => {
+  getToolList()
   recordPosition()
 })
 </script>
 
 <style lang="scss" scoped>
+.text-limit {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  // margin-left: 5px;
+}
 .tools {
   box-sizing: border-box;
   display: flex;
@@ -96,10 +122,11 @@ onMounted(() => {
       width: 10%;
       min-height: 0px;
       background-color: #fff;
+      border-radius: 15px;
       .bar-box {
         cursor: pointer;
         height: 30px;
-        dd{
+        dd {
           margin-left: 20px;
         }
       }
@@ -118,8 +145,7 @@ onMounted(() => {
     .tools-box {
       background-color: #fff;
       border-radius: 8px;
-      padding-left: 20px;
-      padding-right: 20px;
+      padding: $padding-box;
       .contain-title {
         height: 40px;
         line-height: 40px;
@@ -148,6 +174,9 @@ onMounted(() => {
             text-overflow: ellipsis;
             word-break: break-all;
             margin-left: 5px;
+          }
+          .list-name:hover {
+            cursor: pointer;
           }
         }
       }
