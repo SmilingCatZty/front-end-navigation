@@ -9,7 +9,7 @@ import { DocService } from './doc.service';
 import { CreateDocDto } from './dto/create-doc.dto';
 import { Doc } from './schema/doc.schema';
 
-interface DocListMoedl {
+interface DocListModel {
   type: string;
   title: string;
   collection: Doc[];
@@ -56,34 +56,43 @@ export class DocController {
       const docTypes = await this.docService.findDocTypes();
       const docList = await Promise.all(
         docTypes.map(async (type: string) => {
-          const docArr: DocListMoedl[] = [];
+          let docArr: DocListModel = {} as DocListModel;
           const docs = await this.docService.findDocForType(type);
           switch (type) {
             case 'front-web-frame':
-              docArr.push({
+              docArr = {
                 type: type,
                 title: '前端基础框架',
                 collection: docs,
-              });
+              };
+              break;
             case 'front-node-frame':
-              docArr.push({
+              docArr = {
                 type: type,
                 title: 'Node框架',
                 collection: docs,
-              });
+              };
+              break;
             case 'applet':
-              docArr.push({
+              docArr = {
                 type: type,
                 title: '小程序',
                 collection: docs,
-              });
+              };
+              break;
+            case 'front-ui-frame':
+              docArr = {
+                type: type,
+                title: 'UI组件库',
+                collection: docs,
+              };
+              break;
             case 'computer-network':
-              docArr.push({
+              docArr = {
                 type: type,
                 title: '计算机网络',
                 collection: docs,
-              });
-            default:
+              };
               break;
           }
           return docArr;
