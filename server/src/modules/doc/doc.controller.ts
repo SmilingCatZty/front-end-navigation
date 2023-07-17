@@ -15,6 +15,18 @@ interface DocListModel {
   collection: Doc[];
 }
 
+const typeList = new Map([
+  ['front-web-frame', '前端基础框架'],
+  ['front-node-frame', 'Node框架'],
+  ['applet', '小程序'],
+  ['front-ui-frame', 'UI组件库'],
+  ['computer-network', '计算机网络'],
+  ['database', '数据库'],
+  ['server-render', '服务端渲染框架'],
+  ['bag-manager', '包管理工具'],
+  ['mini-front-frame', '微前端'],
+]);
+
 @Controller('doc')
 export class DocController {
   constructor(private readonly docService: DocService) {}
@@ -32,7 +44,6 @@ export class DocController {
         ...createDocDto,
         doc_idx: docTypeIdx,
       };
-
       const doc = await this.docService.create(createDocParams);
       return doc;
     } catch (error) {
@@ -58,43 +69,11 @@ export class DocController {
         docTypes.map(async (type: string) => {
           let docArr: DocListModel = {} as DocListModel;
           const docs = await this.docService.findDocForType(type);
-          switch (type) {
-            case 'front-web-frame':
-              docArr = {
-                type: type,
-                title: '前端基础框架',
-                collection: docs,
-              };
-              break;
-            case 'front-node-frame':
-              docArr = {
-                type: type,
-                title: 'Node框架',
-                collection: docs,
-              };
-              break;
-            case 'applet':
-              docArr = {
-                type: type,
-                title: '小程序',
-                collection: docs,
-              };
-              break;
-            case 'front-ui-frame':
-              docArr = {
-                type: type,
-                title: 'UI组件库',
-                collection: docs,
-              };
-              break;
-            case 'computer-network':
-              docArr = {
-                type: type,
-                title: '计算机网络',
-                collection: docs,
-              };
-              break;
-          }
+          docArr = {
+            type: type,
+            title: typeList.get(type),
+            collection: docs,
+          };
           return docArr;
         }),
       );

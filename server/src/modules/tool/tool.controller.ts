@@ -15,6 +15,14 @@ interface toolListModel {
   collection: Tool[];
 }
 
+const typeList = new Map([
+  ['often', '常用工具'],
+  ['chatGpt', 'ChatGpt'],
+  ['icon', '图标库'],
+  ['css-tool', 'css美化工具'],
+  ['chrome-tool', 'Chrome插件推荐'],
+]);
+
 @Controller('tool')
 export class ToolController {
   constructor(private readonly toolService: ToolService) {}
@@ -34,7 +42,6 @@ export class ToolController {
         ...createToolDto,
         tool_idx: toolTypeIdx,
       };
-
       const tool = await this.toolService.create(createToolParams);
       return tool;
     } catch (error) {
@@ -50,29 +57,11 @@ export class ToolController {
         toolTypes.map(async (type: string) => {
           let toolArr: toolListModel = {} as toolListModel;
           const tools = await this.toolService.findToolForType(type);
-          switch (type) {
-            case 'often':
-              toolArr = {
-                type: type,
-                title: '常用工具',
-                collection: tools,
-              };
-              break;
-            case 'chatGpt':
-              toolArr = {
-                type: type,
-                title: 'ChatGpt',
-                collection: tools,
-              };
-              break;
-            case 'icon':
-              toolArr = {
-                type: type,
-                title: '图标库',
-                collection: tools,
-              };
-              break;
-          }
+          toolArr = {
+            type: type,
+            title: typeList.get(type),
+            collection: tools,
+          };
           return toolArr;
         }),
       );
