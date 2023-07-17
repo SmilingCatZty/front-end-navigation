@@ -60,23 +60,24 @@ onMounted(() => {
     flex-wrap: wrap;
     width: 80%;
     min-height: 10px;
-    border-radius: 15px;
+    // border-radius: 15px;
     background-color: #fff;
     margin: 0px $padding-box $padding-box $padding-box;
     padding: $padding-box;
     .box-item {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
-      width: 21%;
-      height: 100px; /* 设置初始高度为0 */
-      border: 1px solid #ccc;
+      width: 20%;
+      height: 100px;
+      border: none; /* 移除边框 */
       border-radius: 15px;
       margin: 10px;
       padding-left: 10px;
       padding-right: 10px;
+      border: 1px solid #ccc; /* 使用outline代替border */
       .item-img {
-        width: 20%;
+        width: 40px;
         img {
           border: 1px solid #ccc;
           border-radius: 50%;
@@ -85,9 +86,10 @@ onMounted(() => {
         }
       }
       .item-word {
-        width: 80%;
+        width: 180px;
         display: flex;
         flex-wrap: wrap;
+        margin-left: 10px;
         span {
           width: 100%;
         }
