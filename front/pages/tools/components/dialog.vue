@@ -7,7 +7,7 @@
     @confirm="onConfirm"
     @cancel="onCancel"
   >
-    <van-form ref="formRef" @submit="onSubmit" validate>
+    <van-form ref="formRef" validate>
       <van-cell-group inset>
         <van-field
           v-model="toolForm.tool_key"
@@ -71,7 +71,7 @@ const dialogProps = defineProps({
     default: []
   }
 })
-const dialogEmit = defineEmits(['closeDialog'])
+const dialogEmit = defineEmits(['closeDialog', 'update'])
 
 watch(
   () => dialogProps.showToolDialog,
@@ -92,11 +92,6 @@ const toolForm = ref({
   tool_icon: '' // 工具标签
 })
 
-// 提交
-const onSubmit = () => {
-  console.log('submit')
-}
-
 // 确定
 const onConfirm = async () => {
   try {
@@ -104,18 +99,16 @@ const onConfirm = async () => {
     form.validate().then(
       async (resolved: any) => {
         // Promise状态为fulfilled（已解决）
-        console.log('表单验证成功', resolved)
-        console.log('toolForm.value', toolForm.value)
-
         const { status, data } = await toolApi.addTool(toolForm.value)
-        if (status === 200 && data) {
+        if (status === 201 && data) {
           showToast('添加成功')
+          dialogEmit('update')
           dialogEmit('closeDialog')
         }
       },
       (rejected: any) => {
         // Promise状态为rejected（已拒绝）
-        console.log('表单验证失败', rejected)
+        console.error('表单验证失败', rejected)
       }
     )
   } catch (error) {

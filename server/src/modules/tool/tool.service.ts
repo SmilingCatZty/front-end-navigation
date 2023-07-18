@@ -23,7 +23,7 @@ export class ToolService {
 
   /**
    * 查询某种类型下的工具列表
-   * @param tool_type
+   * @param {string} tool_type
    */
   findToolForType(tool_type: string): Promise<Tool[]> {
     const tools = this.toolModule
@@ -44,5 +44,23 @@ export class ToolService {
     });
     const toolTypes: string[] = [...new Set(arr)];
     return toolTypes;
+  }
+
+  /**
+   * 拖拽排序
+   * @param {string} tool_type
+   * @param {string} tool_key
+   * @param {number} tool_idx
+   */
+  async sortToolsByTypeAndIdx(
+    tool_type: string,
+    tool_key: string,
+    tool_idx: number,
+  ): Promise<Tool> {
+    const tool = await this.toolModule.findOneAndUpdate(
+      { tool_type, tool_key },
+      { $set: { tool_idx: tool_idx } },
+    );
+    return tool;
   }
 }

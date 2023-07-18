@@ -40,14 +40,27 @@
           </div>
           <!-- 新增工具 -->
           <div v-if="editable" class="content-list content-create contain-edit" @click="addNewTool()">
-            <div class="create-item">
-              <van-icon color="orange" name="plus" />
-            </div>
+            <svg
+              t="1689659498651"
+              class="icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              p-id="22613"
+              width="20"
+              height="20"
+            >
+              <path
+                d="M561.548387 0v462.451613h462.451613v99.096774H561.548387v462.451613h-99.096774V561.515355L0 561.548387v-99.096774l462.451613-0.033032V0h99.096774z"
+                fill="#FF9903"
+                p-id="22614"
+              ></path>
+            </svg>
           </div>
         </div>
       </div>
     </div>
-    <Dialog :showToolDialog="showToolDialog" :toolTypeList="typeList" @closeDialog="closeDialog" />
+    <Dialog :showToolDialog="showToolDialog" :toolTypeList="typeList" @closeDialog="closeDialog" @update="update" />
   </div>
 </template>
 
@@ -56,9 +69,10 @@ import { onMounted, defineProps as Prop } from 'vue'
 import { ToolsModel, toolsInfoModel } from '~/models/tool.model'
 import { toolApi } from '~/server/api/tools'
 import Dialog from './components/dialog.vue'
+import { showToast } from 'vant'
 
 const toolRef = ref()
-const editable = ref<boolean>(true) // 是否可编辑
+const editable = <boolean>useRuntimeConfig().public.editable // 编辑模式
 const curIndex = ref<number>(0) // 当前索引值
 const toolItemElements: number[] = [] // 记录当前页面下元素滚动位置
 const toolsList = ref<ToolsModel[]>([]) // 工具列表
@@ -93,6 +107,11 @@ const addNewTool = async () => {
 // 关闭弹窗
 const closeDialog = () => {
   showToolDialog.value = false
+}
+
+// 更新
+const update = () => {
+  getToolList()
 }
 
 // 导航栏索引
@@ -135,17 +154,18 @@ const dragOver = (event: any) => {
 // 取消拖拽
 const drop = async (tool: toolsInfoModel, type: string) => {
   try {
-    if (type) {
+    if (tool.tool_key === dragObject.value?.tool_key) return
+    if (type === dragObject.value?.tool_type) {
       const dragItem = dragObject.value // 拖拽元素
       const recordItem = tool // 记录元素
       const indexArr = <number[]>[dragItem?.tool_idx, recordItem.tool_idx]
       const keyArr = <string[]>[dragItem?.tool_key, recordItem.tool_key]
-      console.log('type', type)
-      console.log(indexArr, keyArr)
       const { status, data } = await toolApi.toolDragSort(type, indexArr, keyArr)
       if (status === 200 && data) {
         getToolList()
       }
+    } else {
+      showToast('请对相同类型的工具进行排序')
     }
   } catch (error) {
     console.error('doc-error', error)
@@ -178,34 +198,42 @@ onMounted(() => {
   word-break: break-all;
   // margin-left: 5px;
 }
+
 .tools {
   box-sizing: border-box;
   display: flex;
   overflow: scroll;
+
   .tools-nav {
     width: 10%;
     height: 300px;
+
     .nav-bar {
       position: fixed;
       width: 10%;
       min-height: 0px;
       background-color: #fff;
       border-radius: 15px;
+
       .bar-box {
         cursor: pointer;
         height: 30px;
+
         dd {
           margin-left: 20px;
         }
       }
+
       .active-box {
         color: orange;
       }
+
       .static-box {
         color: black;
       }
     }
   }
+
   .tools-contain {
     width: 80%;
     padding: 0 20px 20px 20px;
@@ -214,16 +242,19 @@ onMounted(() => {
       background-color: #fff;
       border-radius: 8px;
       padding: $padding-box;
+
       .contain-title {
         height: 40px;
         line-height: 40px;
         font-size: 18px;
         border-bottom: 1px solid #ccc;
       }
+
       .contain-content {
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-start;
+
         .content-list {
           display: flex;
           height: 40px;
@@ -231,10 +262,12 @@ onMounted(() => {
           align-items: center;
           padding: 5px;
           position: relative;
+
           .list-icon {
             width: 20px;
             height: 20px;
           }
+
           .list-name {
             display: -webkit-box;
             -webkit-line-clamp: 1;
@@ -244,21 +277,33 @@ onMounted(() => {
             word-break: break-all;
             margin-left: 5px;
           }
+
           .list-name:hover {
             cursor: pointer;
           }
         }
+
+        .contain-edit:hover::before {
+          border: 3px dotted blue($color: #000000);
+        }
+
         .contain-edit::before {
           content: '';
           position: absolute;
-          top: -1px; /* 上边框偏移量 */
-          left: -1px; /* 左边框偏移量 */
-          right: -1px; /* 右边框偏移量 */
-          bottom: -1px; /* 下边框偏移量 */
+          top: -1px;
+          /* 上边框偏移量 */
+          left: -1px;
+          /* 左边框偏移量 */
+          right: -1px;
+          /* 右边框偏移量 */
+          bottom: -1px;
+          /* 下边框偏移量 */
           border: 2px dotted orange;
         }
+
         .content-create {
           justify-content: center;
+
           .create-item {
             display: flex;
             justify-content: center;
@@ -269,9 +314,18 @@ onMounted(() => {
           }
         }
 
+        .content-create:hover {
+          cursor: pointer;
+        }
+
+        .contain-edit:hover {
+          cursor: pointer;
+        }
+
         .contain-edit {
           overflow: hidden;
         }
+
         .contain-static {
           border: 0;
         }

@@ -20,24 +20,11 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
-const active = ref(0)
 const mainRef = ref()
-const scrollTopPosition = ref(123)
 
-const scrolHandler = () => {
-  // console.log(window.scrollY);
-}
-
-const updateContainerHeight = () => {
-  mainRef.value.style.height = `${window.innerHeight}px`
-}
-
-onMounted(() => {
-  // window.addEventListener('resize', updateContainerHeight)
-  // updateContainerHeight()
-})
+onMounted(() => {})
 </script>
 
 <style scoped lang="scss">
@@ -93,7 +80,7 @@ onMounted(() => {
   width: 100%;
   // min-height: ;
   padding: 70px 20px 40px 20px;
-  background: rgba(99, 99, 99, .1);
+  background: rgba(99, 99, 99, 0.1);
   overflow: scroll;
 }
 </style>

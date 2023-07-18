@@ -7,7 +7,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      baseUrl: 'http://localhost:5000/api/'
+      baseUrl: 'http://localhost:5000/api/',
+      editable: false
     }
   },
   // 基础模块
