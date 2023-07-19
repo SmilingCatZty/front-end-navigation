@@ -1,4 +1,4 @@
-<template>
+<template v-if="docList.length > 0">
   <div class="docs">
     <div class="docs-box">
       <div class="box-item" v-for="doc in docList" :key="doc.type">
@@ -86,7 +86,7 @@ const update = () => {
   getDocList()
 }
 
-onMounted(() => {
+useAsyncData('docs', async () => {
   getDocList()
 })
 </script>

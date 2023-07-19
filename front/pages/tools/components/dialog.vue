@@ -129,7 +129,7 @@ const onCancel = () => {
 }
 
 // 选择工具类型
-const selectTooltype = ({ selectedOptions }) => {
+const selectTooltype = ({ selectedOptions }: { selectedOptions: Array<any> }) => {
   showPicker.value = false
   toolForm.value.tool_type = selectedOptions[0].text
 }

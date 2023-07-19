@@ -1,4 +1,4 @@
-<template>
+<template v-if="toolsList.length > 0">
   <div class="tools" ref="toolRef" @scroll="scrollhandler">
     <div class="tools-nav">
       <div class="nav-bar">
@@ -177,15 +177,10 @@ const dragEnd = () => {
   dragObject.value = null
 }
 
-onMounted(() => {
+useAsyncData('tools', async () => {
   getToolList()
   recordPosition()
 })
-
-// useAsyncData(() => {
-//   getToolList()
-//   recordPosition()
-// })
 </script>
 
 <style lang="scss" scoped>
@@ -244,10 +239,11 @@ onMounted(() => {
       padding: $padding-box;
 
       .contain-title {
-        height: 40px;
-        line-height: 40px;
-        font-size: 18px;
+        height: 30px;
+        line-height: 20px;
+        font-size: 16px;
         border-bottom: 1px solid #ccc;
+        font-weight: bold;
       }
 
       .contain-content {

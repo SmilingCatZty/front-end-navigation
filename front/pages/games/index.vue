@@ -1,4 +1,4 @@
-<template>
+<template v-if="gameList.length > 0">
   <div class="games">
     <div class="games-box">
       <div class="box-item" v-for="(game, idx) in gameList" :key="game.game_id" @click="viewGame(game.game_link)">
@@ -76,8 +76,7 @@ const closeDialog = () => {
   showGameDialog.value = false
 }
 
-onMounted(() => {
-  useRuntimeConfig().public.editable = true
+useAsyncData('games', async () => {
   getGameList()
 })
 </script>
