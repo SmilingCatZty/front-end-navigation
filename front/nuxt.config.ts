@@ -3,7 +3,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 export default defineNuxtConfig({
   app: {
-    // baseURL: isDev ? '/' : '/abinWeb/',
+    baseURL: '/smiling-cat/',
     buildAssetsDir: 'static', //修改站点资产的文件夹名称，默认是_nuxt
     head: {
       title: '前端助手',

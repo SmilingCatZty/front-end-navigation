@@ -7,8 +7,9 @@
 </template>
 
 <script lang="ts" setup>
-import './canvas'
-// import './canvas-game/classes'
+import { createCanvas } from './canvas'
+
+const router = useRouter()
 
 definePageMeta({
   layout: false
@@ -17,6 +18,10 @@ definePageMeta({
 const success = () => {
   useRuntimeConfig().public.editable = true // 编辑模式
 }
+
+onMounted(async () => {
+  createCanvas()
+})
 </script>
 
 <style lang="scss" scoped>
