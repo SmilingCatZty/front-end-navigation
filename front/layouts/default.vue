@@ -10,7 +10,7 @@
       <slot></slot>
     </main>
 
-    <NuxtLink class="btn-home" to="/">
+    <NuxtLink class="btn-home" to="/" @click="backHome()">
       <svg
         t="1689745237929"
         class="icon"
@@ -52,7 +52,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
+const router = useRouter()
 const mainRef = ref()
+const backHome = () => {
+  router.push('')
+}
 
 onMounted(() => {})
 </script>
@@ -124,5 +128,37 @@ onMounted(() => {})
   justify-content: center;
   align-items: center;
   height: 40px;
+}
+
+@media(max-width: 480px){
+  .header{
+    bottom: 0;
+    left: auto;
+    top: auto;
+    padding: 0;
+    height: 80px;
+    background-color: rgb(243, 246, 246);
+    border-radius: 15px 15px 0px 0px ;
+    .router-link-active {
+      font-size: 20px;
+    }
+    .navigation-link{
+      font-size: 20px;
+    }
+    a{
+      width: 60px;
+      justify-content: center;
+    }
+  }
+  .content{
+    padding: 0;
+    margin-bottom: 70px;
+  }
+  .btn-home{
+    bottom: 120px;
+  }
+  .page-footer{
+    display: none;
+  }
 }
 </style>

@@ -38,7 +38,6 @@
 import { gameApi } from '~/server/api/games'
 import { GameInfoModel } from '~/models/game.model'
 import Dialog from './components/dialog.vue'
-import { config } from 'process'
 
 const gameList = ref<GameInfoModel[]>([]) // 游戏列表
 const editable = <boolean>useRuntimeConfig().public.editable // 编辑模式
@@ -162,5 +161,30 @@ useAsyncData('games', async () => {
     cursor: pointer;
     background-color: rgba($color: #d76e11, $alpha: 0.1);
   }
+}
+
+@media(max-width: 480px){
+.games{
+  .games-box{
+    width: 100%;
+    margin: 0;
+    .box-item{
+      width: 100%;
+      margin: 0 0 10px 0;
+      .item-img{
+        width: 60px;
+        height: 60px;
+        img{
+          width: 100%;
+          height: 100%;
+        }
+      }
+      .item-word{
+        width: 80%;
+        font-size: 18px;
+      }
+    }
+  }
+}
 }
 </style>

@@ -190,4 +190,23 @@ useAsyncData('docs', async () => {
     }
   }
 }
+
+@media (max-width: 480px) {
+  .docs {
+    display: flex;
+    justify-content: center;
+    .docs-box {
+      width: 100%;
+      margin: 0;
+      .box-item{
+        // padding: 0;
+        .item-contain{
+          .contain-doc{
+            width: 46%;
+          }
+        }
+      }
+    }
+  }
+}
 </style>

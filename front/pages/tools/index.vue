@@ -333,4 +333,29 @@ useAsyncData('tools', async () => {
     }
   }
 }
+
+@media (max-width: 480px) {
+  .tools-nav{
+    display: none;
+  }
+  .tools {
+    .tools-contain{
+      width: 100%;
+      padding: 0;
+      .tools-box{
+        .contain-title{
+          font-size: 18px;
+        }
+        .contain-content{
+          .content-list{
+            width: 46%;
+            .list-name{
+              font-size: 18px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
 </style>
