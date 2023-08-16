@@ -23,8 +23,11 @@ export function createCanvas(): void {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
     // 1024*576
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight + 140
+    // canvas.width = window.innerWidth
+    // canvas.height = window.innerHeight + 140
+
+    canvas.width = 1024
+    canvas.height = 576
 
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -59,6 +62,23 @@ export function createCanvas(): void {
     const playerImageRight = new Image()
     playerImageRight.src = '../assets/images/basics/playerRight.png'
 
+    const battleGroundImage = new Image()
+    battleGroundImage.src = '../assets/images/basics/battleBackground.png'
+
+    const draggleImage = new Image()
+    draggleImage.src = '../assets/images/basics/draggleSprite.png'
+
+    const embyImage = new Image()
+    embyImage.src = '../assets/images/basics/embySprite.png'
+    // embyImage.onload = function () {
+    //   console.log(123);
+    //   // 设置目标尺寸
+    //   const targetWidth = window.innerWidth;
+    //   const targetHeight = window.innerHeight;
+    //   // 在 Canvas 上绘制图片并拉伸
+    //   ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+    // }
+
     // 边界类
     class Boundary {
       width: number
@@ -81,17 +101,36 @@ export function createCanvas(): void {
     class Sprite {
       position: { x: number, y: number }
       image: HTMLImageElement
-      frames: { max: number, val: number, elapsed: number }
+      frames: { max: number, val: number, elapsed: number, hold: number }
       width!: number
       height!: number;
-      moving: boolean;
+      animate: boolean;
       sprites: any;
+      opacity: number;
+      health: number;
+      isEnemy: boolean | undefined
+
       constructor(
         {
-          position, velocity, image, frames = { max: 1 }, width, height, sprites
+          position,
+          velocity,
+          image,
+          frames = { max: 1, hold: 10 },
+          width, height,
+          animate = false,
+          sprites,
+          isEnemy
         }:
           {
-            position?: any, velocity?: any, image?: any, frames?: any, width?: number, height?: number, sprites?: any
+            position?: any,
+            velocity?: any,
+            image?: any,
+            frames?: any,
+            width?: number,
+            height?: number,
+            animate?: boolean,
+            sprites?: any,
+            isEnemy?: boolean
           }
       ) {
         this.position = position
@@ -102,10 +141,16 @@ export function createCanvas(): void {
           this.width = this.image.width / this.frames.max
           this.height = this.image.height
         }
-        this.moving = false
+        this.animate = animate
         this.sprites = sprites
+        this.opacity = 1
+        this.health = 100
+        this.isEnemy = isEnemy
       }
+      // 画
       draw() {
+        ctx.save()
+        ctx.globalAlpha = this.opacity
         ctx.drawImage(this.image,
           this.frames.val * this.width,
           0,
@@ -116,19 +161,65 @@ export function createCanvas(): void {
           this.image.width / this.frames.max,
           this.image.height,
         )
-        if (!this.moving) return
-        // if (this.moving) {
+        ctx.restore()
+        if (!this.animate) return
+
         if (this.frames.max > 1) {
           this.frames.elapsed++
         }
-        if (this.frames.elapsed % 10 === 0) {
-          if (this.frames.val < this.frames.max - 1) {
-            this.frames.val++
-          } else {
-            this.frames.val = 0
-          }
+        if (this.frames.elapsed % this.frames.hold === 0) {
+          if (this.frames.val < this.frames.max - 1) this.frames.val++
+          else this.frames.val = 0
         }
         // }
+      }
+      // 攻击
+      attack(
+        { attack, recipient }
+          :
+          {
+            attack: { name: string, damage: number, type: string },
+            recipient: { position: any, opacity: number }
+          }
+      ) {
+        const tl = gsap.timeline()
+
+        this.health -= attack.damage
+
+        let movementDistance = 20
+        if (this.isEnemy) movementDistance = -20
+
+        let healthBar = '#enemyHealthyBar'
+        if (this.isEnemy) healthBar = '#playerHealthyBar'
+
+        tl.to(this.position, {
+          x: this.position.x - movementDistance,
+        }).to(this.position, {
+          x: this.position.x + movementDistance * 2,
+          duration: 0.1,
+          onComplete: () => {
+            console.log(this.health);
+            
+            // 敌人受击动作
+            gsap.to(healthBar, {
+              width: this.health - attack.damage + '%'
+            })
+            gsap.to(recipient.position, {
+              x: recipient.position.x + 10,
+              yoyo: true,
+              repeat: 5,
+              duration: 0.08
+            })
+            gsap.to(recipient, {
+              opacity: 0,
+              repeat: 5,
+              yoyo: true,
+              duration: 0.08
+            })
+          }
+        }).to(this.position, {
+          // x: this.position.x
+        })
       }
     }
 
@@ -168,6 +259,45 @@ export function createCanvas(): void {
       image: foregroundImage
     })
 
+    // 战斗背景实例
+    const battleBackground = new Sprite({
+      position: {
+        x: 0,
+        y: 0
+      },
+      image: battleGroundImage
+    })
+
+    // 敌方实例
+    const draggle = new Sprite({
+      position: {
+        x: 800,
+        y: 100,
+      },
+      image: draggleImage,
+      frames: {
+        max: 4,
+        hold: 30
+      },
+      animate: true,
+      isEnemy: true
+    })
+
+    // 我方实例
+    const emby = new Sprite({
+      position: {
+        x: 280,
+        y: 350,
+      },
+      image: embyImage,
+      frames: {
+        max: 4,
+        hold: 30
+      },
+      animate: true,
+      isEnemy: false
+    })
+
     collisionMap.forEach((row: number[], i: number) => {
       row.forEach((symbol: number, j: number) => {
         if (symbol === 1025) {
@@ -198,7 +328,7 @@ export function createCanvas(): void {
 
 
 
-    // 键盘按压
+    // 键盘
     const keys = {
       w: {
         pressed: false
@@ -213,7 +343,6 @@ export function createCanvas(): void {
         pressed: false
       }
     }
-
     // 移动
     const movables: Object[] = [background, ...boundaries, foreground, ...battleZones]
     // 战斗
@@ -246,7 +375,7 @@ export function createCanvas(): void {
       foreground.draw()
 
       let moving: boolean = true
-      player.moving = false
+      player.animate = false
 
       if (battle.initiated) return
 
@@ -281,11 +410,16 @@ export function createCanvas(): void {
               onComplete() {
                 gsap.to('#battle-collision', {
                   opacity: 1,
-                  duration: 0.4
+                  duration: 0.4,
+                  onComplete() {
+                    // 开启新的动画循环
+                    animateBattle()
+                    gsap.to('#battle-collision', {
+                      opacity: 0,
+                      duration: 0.4,
+                    })
+                  }
                 })
-
-                // 开启新的动画循环
-                animateBattle()
               }
             })
             break
@@ -294,7 +428,7 @@ export function createCanvas(): void {
       }
 
       if (keys.w.pressed && lastKey === 'w') {
-        player.moving = true
+        player.animate = true
         player.image = playerImageUp
         for (let i = 0; i < boundaries.length; i++) {
           const boundary = boundaries[i]
@@ -322,7 +456,7 @@ export function createCanvas(): void {
         }
       }
       if (keys.a.pressed && lastKey === 'a') {
-        player.moving = true
+        player.animate = true
         player.image = playerImageLeft
         for (let i = 0; i < boundaries.length; i++) {
           const boundary = boundaries[i]
@@ -350,7 +484,7 @@ export function createCanvas(): void {
         }
       }
       if (keys.s.pressed && lastKey === 's') {
-        player.moving = true
+        player.animate = true
         player.image = playerImageDown
         for (let i = 0; i < boundaries.length; i++) {
           const boundary = boundaries[i]
@@ -378,7 +512,7 @@ export function createCanvas(): void {
         }
       }
       if (keys.d.pressed && lastKey === 'd') {
-        player.moving = true
+        player.animate = true
         player.image = playerImageRight
         for (let i = 0; i < boundaries.length; i++) {
           const boundary = boundaries[i]
@@ -407,11 +541,30 @@ export function createCanvas(): void {
       }
     }
 
-    animate()
+    // animate()
 
     function animateBattle() {
       window.requestAnimationFrame(animateBattle)
+      battleBackground.draw()
+      draggle.draw()
+      emby.draw()
     }
+    animateBattle()
+
+    document.querySelectorAll('button').forEach((button) => {
+      button.addEventListener('click', () => {
+        console.log('点击');
+        emby.attack({
+          attack: {
+            name: 'Tackle',
+            damage: 10,
+            type: 'Nomal'
+          },
+          recipient: draggle
+        })
+      })
+    })
+
 
     let lastKey: string = ''
 
