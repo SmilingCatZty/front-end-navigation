@@ -1,3 +1,7 @@
+// 在客户端中执行的代码，可以使用 document 和其他浏览器对象
+const canvas = document.querySelector('canvas') as HTMLCanvasElement
+const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+
 // 精灵图类
 class Sprite {
   position: { x: number, y: number }

@@ -1,24 +1,45 @@
 import { collisions } from './canvas-game/data/collisions'
+import { battleZonesData } from './canvas-game/data/battleZones'
+import { gsap } from 'gsap'
 
 console.log('enter canvas game');
 
 export function createCanvas(): void {
   if (process.client && document) {
+    //碰撞区域
     const collisionMap: any[] = []
-
     for (let i: number = 0; i < collisions.length; i += 70) {
       collisionMap.push(collisions.slice(i, 70 + i));
     }
+    // 战斗区域
+    const battleZonesMap: any[] = []
+    for (let i: number = 0; i < battleZonesData.length; i += 70) {
+      battleZonesMap.push(battleZonesData.slice(i, 70 + i));
+    }
+
 
     // 在客户端中执行的代码，可以使用 document 和其他浏览器对象
     const canvas = document.querySelector('canvas') as HTMLCanvasElement
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+
     // 1024*576
-    canvas.width = 1024
-    canvas.height = 800
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight + 140
 
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    let bgcImgX: number = -740
+    let bgcImgY: number = -550
+    let palyerImgX: number = -740
+    let palyerImgY: number = -550
+
+    const boundaries: any = []
+    const battleZones: any[] = []
+    const offset = {
+      x: -740,
+      y: -550
+    }
 
     const image = new Image()
     image.src = '../assets/images/basics/Pellet Town.png'
@@ -37,18 +58,6 @@ export function createCanvas(): void {
 
     const playerImageRight = new Image()
     playerImageRight.src = '../assets/images/basics/playerRight.png'
-
-
-    let bgcImgX: number = -740
-    let bgcImgY: number = -550
-    let palyerImgX: number = -740
-    let palyerImgY: number = -550
-
-    const boundaries: any = []
-    const offset = {
-      x: -740,
-      y: -550
-    }
 
     // 边界类
     class Boundary {
@@ -173,6 +182,22 @@ export function createCanvas(): void {
       })
     })
 
+    battleZonesMap.forEach((row: number[], i: number) => {
+      row.forEach((symbol: number, j: number) => {
+        if (symbol === 1025) {
+          battleZones.push(
+            new Boundary({
+              position: {
+                x: j * Boundary.width + offset.x,
+                y: i * Boundary.height + offset.y
+              }
+            }))
+        }
+      })
+    })
+
+
+
     // 键盘按压
     const keys = {
       w: {
@@ -190,7 +215,11 @@ export function createCanvas(): void {
     }
 
     // 移动
-    const movables: Object[] = [background, ...boundaries, foreground]
+    const movables: Object[] = [background, ...boundaries, foreground, ...battleZones]
+    // 战斗
+    const battle = {
+      initiated: false
+    }
 
     // 矩形碰撞检查
     function checkRectangularCollision(
@@ -205,16 +234,64 @@ export function createCanvas(): void {
     }
     // 动作函数
     function animate() {
-      window.requestAnimationFrame(animate)
+      const animationId = window.requestAnimationFrame(animate)
       background.draw()
       boundaries.forEach((boundary: any) => {
         boundary.draw()
+      })
+      battleZones.forEach((battleZone: any) => {
+        battleZone.draw()
       })
       player.draw()
       foreground.draw()
 
       let moving: boolean = true
       player.moving = false
+
+      if (battle.initiated) return
+
+      if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
+        for (let i = 0; i < battleZones.length; i++) {
+          const battleZone = battleZones[i]
+          const overlappingArea =
+            (
+              Math.min(player.position.x + player.width, battleZone.position.x + battleZone.width)
+              -
+              Math.max(player.position.x, battleZone.position.x)
+            )
+            *
+            (
+              Math.min(player.position.y + player.height, battleZone.position.y + battleZone.height)
+              -
+              Math.max(player.position.y, battleZone.position.y)
+            )
+          if (
+            checkRectangularCollision({ rectangle1: player, rectangle2: battleZone })
+            && overlappingArea > (player.width * player.height) / 2
+            && Math.random() < 0.01
+          ) {
+            console.log('fight');
+            // 销毁当前的动画循环
+            window.cancelAnimationFrame(animationId)
+            battle.initiated = true
+            gsap.to('#battle-collision', {
+              opacity: 1,
+              repeat: 3,
+              yoyo: true,
+              onComplete() {
+                gsap.to('#battle-collision', {
+                  opacity: 1,
+                  duration: 0.4
+                })
+
+                // 开启新的动画循环
+                animateBattle()
+              }
+            })
+            break
+          }
+        }
+      }
 
       if (keys.w.pressed && lastKey === 'w') {
         player.moving = true
@@ -331,6 +408,10 @@ export function createCanvas(): void {
     }
 
     animate()
+
+    function animateBattle() {
+      window.requestAnimationFrame(animateBattle)
+    }
 
     let lastKey: string = ''
 

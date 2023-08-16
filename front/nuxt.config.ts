@@ -35,7 +35,7 @@ export default defineNuxtConfig({
   },
   devtools: {
     enabled: true,
-    module: ['@vant/nuxt', '@nuxtjs/axios', '@nuxtjs/style-resources'],
+    module: ['@vant/nuxt', '@nuxtjs/axios', '@nuxtjs/style-resources', 'gsap'],
     vant: {}
   },
   runtimeConfig: {
