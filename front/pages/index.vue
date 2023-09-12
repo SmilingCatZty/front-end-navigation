@@ -24,9 +24,11 @@
       </div>
       <!-- 技能栏 -->
       <div id="battle-skill" class="battle-skill">
+        <div id="dialogueBox" class="skill-name">sjs</div>
+        <div id="attacksBox" class="skill-name">sjs</div>
         <div class="skill-list">
-          <button>Attack1</button>
-          <button>Attack2</button>
+          <button>Tackle</button>
+          <button>FireBall</button>
           <!-- <button>Attack3</button>
           <button>Attack4</button> -->
         </div>
@@ -165,6 +167,19 @@ onMounted(async () => {
       right: 0;
       border-top: 4px black solid;
       display: flex;
+
+      .skill-name {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: #fff;
+        padding: 12px;
+        font-size: 24px;
+        display: none;
+        cursor: pointer;
+      }
 
       .skill-list {
         width: 66.66%;

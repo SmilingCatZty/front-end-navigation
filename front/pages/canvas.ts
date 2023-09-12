@@ -12,9 +12,42 @@ export function createCanvas(): void {
       collisionMap.push(collisions.slice(i, 70 + i));
     }
     // 战斗区域
-    const battleZonesMap: any[] = []
+    const battleZonesMap: any = []
     for (let i: number = 0; i < battleZonesData.length; i += 70) {
       battleZonesMap.push(battleZonesData.slice(i, 70 + i));
+    }
+
+    const attacks: any = {
+      Tackle: {
+        name: 'Tackle',
+        damage: 10,
+        type: 'Nomal'
+      },
+      FireBall: {
+        name: 'FireBall',
+        damage: 25,
+        type: 'Fire'
+      }
+    }
+
+    const monsters = {
+      Emby: {
+        position: { x: 280, y: 325 },
+        image: { src: './img/embySprite.png' },
+        frames: { max: 4, hold: 30 },
+        animate: true,
+        name: 'Emby',
+        attacks: [attacks.Tackle, attacks.Fireball]
+      },
+      Draggle: {
+        position: { x: 800, y: 100 },
+        image: { src: './img/draggleSprite.png' },
+        frames: { max: 4, hold: 30 },
+        animate: true,
+        isEnemy: true,
+        name: 'Draggle',
+        attacks: [attacks.Tackle, attacks.Fireball]
+      }
     }
 
 
@@ -70,6 +103,7 @@ export function createCanvas(): void {
 
     const embyImage = new Image()
     embyImage.src = '../assets/images/basics/embySprite.png'
+
     // embyImage.onload = function () {
     //   console.log(123);
     //   // 设置目标尺寸
@@ -102,13 +136,15 @@ export function createCanvas(): void {
       position: { x: number, y: number }
       image: HTMLImageElement
       frames: { max: number, val: number, elapsed: number, hold: number }
-      width!: number
+      width!: number;
       height!: number;
       animate: boolean;
       sprites: any;
       opacity: number;
       health: number;
-      isEnemy: boolean | undefined
+      isEnemy: boolean | undefined;
+      rotation: number;
+      name!: string;
 
       constructor(
         {
@@ -116,13 +152,16 @@ export function createCanvas(): void {
           velocity,
           image,
           frames = { max: 1, hold: 10 },
-          width, height,
+          width,
+          height,
           animate = false,
           sprites,
-          isEnemy
+          isEnemy = false,
+          rotation = 0,
+          name = ''
         }:
           {
-            position?: any,
+            position: { x: number, y: number },
             velocity?: any,
             image?: any,
             frames?: any,
@@ -130,7 +169,9 @@ export function createCanvas(): void {
             height?: number,
             animate?: boolean,
             sprites?: any,
-            isEnemy?: boolean
+            isEnemy?: boolean,
+            rotation?: number,
+            name?: string
           }
       ) {
         this.position = position
@@ -141,15 +182,22 @@ export function createCanvas(): void {
           this.width = this.image.width / this.frames.max
           this.height = this.image.height
         }
+
         this.animate = animate
         this.sprites = sprites
         this.opacity = 1
         this.health = 100
         this.isEnemy = isEnemy
+        this.rotation = rotation
+        this.name = name
       }
       // 画
       draw() {
         ctx.save()
+        // ctx.translate(
+        //   this.position.x + this.width / 2,
+        //   this.position.y + this.height / 2
+        // )
         ctx.globalAlpha = this.opacity
         ctx.drawImage(this.image,
           this.frames.val * this.width,
@@ -175,51 +223,101 @@ export function createCanvas(): void {
       }
       // 攻击
       attack(
-        { attack, recipient }
+        { attack, recipient, renderSprites }
           :
           {
             attack: { name: string, damage: number, type: string },
-            recipient: { position: any, opacity: number }
+            recipient: { position: { x: number, y: number }, opacity: number },
+            renderSprites: Sprite[]
           }
       ) {
-        const tl = gsap.timeline()
-
-        this.health -= attack.damage
-
-        let movementDistance = 20
-        if (this.isEnemy) movementDistance = -20
+        (document.querySelector('#dialogueBox') as Element as any).style.display = 'block';
+        (document.querySelector('#dialogueBox') as Element).innerHTML = this.name + ' 使用了 ' + attack.name;
 
         let healthBar = '#enemyHealthyBar'
         if (this.isEnemy) healthBar = '#playerHealthyBar'
 
-        tl.to(this.position, {
-          x: this.position.x - movementDistance,
-        }).to(this.position, {
-          x: this.position.x + movementDistance * 2,
-          duration: 0.1,
-          onComplete: () => {
-            console.log(this.health);
-            
-            // 敌人受击动作
-            gsap.to(healthBar, {
-              width: this.health - attack.damage + '%'
+        this.health -= attack.damage
+
+        switch (attack.name) {
+          case 'Tackle':
+            const tl = gsap.timeline()
+
+            let movementDistance = 20
+            if (this.isEnemy) movementDistance = -20
+
+            tl.to(this.position, {
+              x: this.position.x - movementDistance,
+            }).to(this.position, {
+              x: this.position.x + movementDistance * 2,
+              duration: 0.1,
+              onComplete: () => {
+                console.log(this.health);
+                // 敌人受击动作
+                gsap.to(healthBar, {
+                  width: this.health - attack.damage + '%'
+                })
+                gsap.to(recipient.position, {
+                  x: recipient.position.x + 10,
+                  yoyo: true,
+                  repeat: 5,
+                  duration: 0.08
+                })
+                gsap.to(recipient, {
+                  opacity: 0,
+                  repeat: 5,
+                  yoyo: true,
+                  duration: 0.08
+                })
+              }
+            }).to(this.position, {
+              x: this.position.x
             })
-            gsap.to(recipient.position, {
-              x: recipient.position.x + 10,
-              yoyo: true,
-              repeat: 5,
-              duration: 0.08
+            break
+          case 'FireBall':
+            const fireBallImage = new Image()
+            fireBallImage.src = '../assets/images/basics/fireball.png'
+            const fireBall = new Sprite({
+              position: {
+                x: 280,
+                y: 350,
+              },
+              image: fireBallImage,
+              frames: {
+                max: 4,
+                hold: 10,
+              },
+              animate: true
             })
-            gsap.to(recipient, {
-              opacity: 0,
-              repeat: 5,
-              yoyo: true,
-              duration: 0.08
+            renderSprites.splice(1, 0, fireBall)
+
+            gsap.to(fireBall.position, {
+              x: recipient.position.x,
+              y: recipient.position.y,
+              onComplete: () => {
+                console.log(this.health);
+                // 敌人受击动作
+                gsap.to(healthBar, {
+                  width: this.health + '%'
+                })
+                gsap.to(recipient.position, {
+                  x: recipient.position.x + 10,
+                  yoyo: true,
+                  repeat: 5,
+                  duration: 0.08
+                })
+                gsap.to(recipient, {
+                  opacity: 0,
+                  repeat: 5,
+                  yoyo: true,
+                  duration: 0.08
+                })
+                renderSprites.splice(1, 1)
+                // renderSprites.pop()
+              }
             })
-          }
-        }).to(this.position, {
-          // x: this.position.x
-        })
+            break
+        }
       }
     }
 
@@ -268,7 +366,14 @@ export function createCanvas(): void {
       image: battleGroundImage
     })
 
-    // 敌方实例
+    // const fire = new Sprite({
+    //   position: {
+    //     x: 280,
+    //     y: 350
+    //   },
+    //   image: fireBallImage
+    // })
+
     const draggle = new Sprite({
       position: {
         x: 800,
@@ -280,7 +385,8 @@ export function createCanvas(): void {
         hold: 30
       },
       animate: true,
-      isEnemy: true
+      isEnemy: true,
+      name: '小虫子'
     })
 
     // 我方实例
@@ -295,7 +401,8 @@ export function createCanvas(): void {
         hold: 30
       },
       animate: true,
-      isEnemy: false
+      isEnemy: false,
+      name: '帅气的你'
     })
 
     collisionMap.forEach((row: number[], i: number) => {
@@ -541,28 +648,52 @@ export function createCanvas(): void {
       }
     }
 
-    // animate()
+    const renderSprites: Sprite[] = [draggle, emby]
+    const button = document.createElement('button')
+    button.innerHTML = 'FireBall'
+    // 攻击说明 - 怪物
+    document.querySelector('#attacksBox')?.append('button')
 
-    function animateBattle() {
+    async function animateBattle() {
+      // console.log(1);
       window.requestAnimationFrame(animateBattle)
       battleBackground.draw()
-      draggle.draw()
-      emby.draw()
+      if (renderSprites.length !== 0) {
+        renderSprites.forEach((sprite: Sprite) => {
+          sprite.draw()
+        })
+      }
     }
+    // animate()
     animateBattle()
 
+    const queue: any[] = []
+
     document.querySelectorAll('button').forEach((button) => {
-      button.addEventListener('click', () => {
-        console.log('点击');
+      button.addEventListener('click', (e: any) => {
+        console.log('点击', e.currentTarget.innerHTML);
+        const selectedAttack = attacks[e.currentTarget.innerHTML]
         emby.attack({
-          attack: {
-            name: 'Tackle',
-            damage: 10,
-            type: 'Nomal'
-          },
-          recipient: draggle
+          attack: selectedAttack,
+          recipient: draggle,
+          renderSprites
+        })
+        queue.push(() => {
+          draggle.attack({
+            attack: attacks.Tackle,
+            recipient: emby,
+            renderSprites
+          })
         })
       })
+    })
+    // 攻击说明 - 玩家
+    document.querySelector('#dialogueBox')?.addEventListener('click', (e: Event) => {
+      if (queue.length > 0) {
+        queue[0]()
+        queue.shift()
+      }
+      (e.currentTarget as Element as any).style.display = 'none'
     })
 
 
