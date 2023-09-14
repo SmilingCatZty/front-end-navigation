@@ -31,8 +31,6 @@
           <div class="skill-list">
             <button>Tackle</button>
             <button>FireBall</button>
-            <!-- <button>Attack3</button>
-            <button>Attack4</button> -->
           </div>
           <div id="attackType" class="skill-fight">
             <h1>Attack Type</h1>
@@ -41,8 +39,8 @@
       </div>
 
     </div>
-    <van-button type="success" @click="success">开启编辑模式</van-button>
-    <NuxtLink class="navigation-link" to="/tools">前往工具页</NuxtLink>
+    <!-- <van-button type="success" @click="success">开启编辑模式</van-button>
+    <NuxtLink class="navigation-link" to="/tools">前往工具页</NuxtLink> -->
   </div>
 </template>
 
@@ -77,6 +75,7 @@ onMounted(async () => {
   background-color: black;
 
   .home-canvas {
+    box-sizing: border-box;
     display: inline-block;
     position: relative;
 
@@ -95,129 +94,130 @@ onMounted(async () => {
       z-index: 10;
     }
 
-    .userInterface{
+    .userInterface {
       display: none;
-    }
 
-    .battle-draggle {
-      position: absolute;
-      width: 250px;
-      height: 40px;
-      background-color: #fff;
-      top: 50px;
-      right: 50px;
-      border: 4px solid black;
-      font-size: 16px;
-
-      .draggle-status {
-        position: relative;
-
-        .draggle-skill {
-          height: 5px;
-          margin-top: 10px;
-          background-color: #ccc;
-        }
-
-        .draggle-blood {
-          position: absolute;
-          height: 5px;
-          background-color: green;
-          top: 0;
-          left: 0;
-          right: 0;
-          width: 100%;
-        }
-
-      }
-
-    }
-
-    .battle-emby {
-      // display: none;
-      position: absolute;
-      width: 250px;
-      height: 40px;
-      background-color: #fff;
-      top: 250px;
-      left: 50px;
-      border: 4px solid black;
-      font-size: 16px;
-
-      .emby-status {
-        position: relative;
-
-        .emby-skill {
-          height: 5px;
-          margin-top: 10px;
-          background-color: #ccc;
-        }
-
-        .emby-blood {
-          position: absolute;
-          height: 5px;
-          background-color: green;
-          top: 0;
-          left: 0;
-          right: 0;
-          width: 100%;
-        }
-
-      }
-
-    }
-
-    .battle-skill {
-      background-color: white;
-      height: 140px;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      border-top: 4px black solid;
-      display: flex;
-
-      .skill-name {
+      .battle-draggle {
         position: absolute;
-        top: 0;
-        right: 0;
+        width: 250px;
+        height: 40px;
+        background-color: #fff;
+        top: 8%;
+        right: 5%;
+        border: 4px solid black;
+        font-size: 16px;
+
+        .draggle-status {
+          position: relative;
+
+          .draggle-skill {
+            height: 5px;
+            margin-top: 10px;
+            background-color: #ccc;
+          }
+
+          .draggle-blood {
+            position: absolute;
+            height: 5px;
+            background-color: green;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+          }
+
+        }
+
+      }
+
+      .battle-emby {
+        // display: none;
+        position: absolute;
+        width: 250px;
+        height: 40px;
+        background-color: #fff;
+        top: 45%;
+        left: 20%;
+        border: 4px solid black;
+        font-size: 16px;
+
+        .emby-status {
+          position: relative;
+
+          .emby-skill {
+            height: 5px;
+            margin-top: 10px;
+            background-color: #ccc;
+          }
+
+          .emby-blood {
+            position: absolute;
+            height: 5px;
+            background-color: green;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+          }
+
+        }
+
+      }
+
+      .battle-skill {
+        background-color: white;
+        height: 140px;
+        position: absolute;
         bottom: 0;
         left: 0;
-        background-color: #fff;
-        padding: 12px;
-        font-size: 24px;
-        display: none;
-        cursor: pointer;
-      }
+        right: 0;
+        border-top: 4px black solid;
+        display: flex;
 
-      .skill-list {
-        width: 66.66%;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-
-        button {
-          border: 0;
-        }
-
-        button:hover {
-          background-color: #ddd;
+        .skill-name {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          background-color: #fff;
+          padding: 12px;
+          font-size: 24px;
+          display: none;
           cursor: pointer;
         }
-      }
 
-      .skill-fight {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 33.33%;
-        border-left: 4px black solid;
+        .skill-list {
+          width: 66.66%;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
 
-        h1 {
-          margin: 0;
+          button {
+            border: 0;
+          }
+
+          button:hover {
+            background-color: #ddd;
+            cursor: pointer;
+          }
         }
-      }
 
-      // padding: 12px;
+        .skill-fight {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 33.33%;
+          border-left: 4px black solid;
+
+          h1 {
+            margin: 0;
+          }
+        }
+
+        // padding: 12px;
+      }
     }
+
 
   }
 }

@@ -17,37 +17,19 @@ export function createCanvas(): void {
       battleZonesMap.push(battleZonesData.slice(i, 70 + i));
     }
 
-    const attacks: any = {
-      Tackle: {
-        name: 'Tackle',
-        damage: 10,
-        type: 'Nomal'
-      },
-      FireBall: {
-        name: 'FireBall',
-        damage: 50,
-        type: 'Fire'
-      }
-    }
-
     // 在客户端中执行的代码，可以使用 document 和其他浏览器对象
     const canvas = document.querySelector('canvas') as HTMLCanvasElement
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
     // 1024*576
-    // canvas.width = window.innerWidth
-    // canvas.height = window.innerHeight + 140
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
 
-    canvas.width = 1024
-    canvas.height = 576
+    // canvas.width = 1024
+    // canvas.height = 576
 
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    let bgcImgX: number = -740
-    let bgcImgY: number = -550
-    let palyerImgX: number = -740
-    let palyerImgY: number = -550
 
     const boundaries: any = []
     const battleZones: any[] = []
@@ -83,31 +65,36 @@ export function createCanvas(): void {
     const embyImage = new Image()
     embyImage.src = '../assets/images/basics/embySprite.png'
 
-    // embyImage.onload = function () {
-    //   console.log(123);
-    //   // 设置目标尺寸
-    //   const targetWidth = window.innerWidth;
-    //   const targetHeight = window.innerHeight;
-    //   // 在 Canvas 上绘制图片并拉伸
-    //   ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-    // }
+    // 攻击方式
+    const attacks: any = {
+      Tackle: {
+        name: 'Tackle',
+        damage: 10,
+        type: 'Nomal'
+      },
+      FireBall: {
+        name: 'FireBall',
+        damage: 50,
+        type: 'Fire'
+      }
+    }
 
     // 怪物对象
     const monsters: {
-      Emby: { position: { x: number, y: number }, image: HTMLImageElement, frames: { max: number, hold: number }, isEnemy: boolean, animate: boolean, name: string, attacks: any },
-      Draggle: { position: { x: number, y: number }, image: HTMLImageElement, frames: { max: number, hold: number }, isEnemy: boolean, animate: boolean, name: string, attacks: any },
+      Emby: { position: { x: number, y: number }, image: any, frames: { max: number, hold: number }, isEnemy: boolean, animate: boolean, name: string, attacks: any },
+      Draggle: { position: { x: number, y: number }, image: any, frames: { max: number, hold: number }, isEnemy: boolean, animate: boolean, name: string, attacks: any },
     } = {
       Emby: {
-        position: { x: 280, y: 350 },
+        position: { x: canvas.width / 3.5, y: canvas.height / 1.7 },
         image: { src: '../assets/images/basics/embySprite.png' },
         frames: { max: 4, hold: 30 },
         animate: true,
         isEnemy: false,
-        name: '帅气的你',
+        name: '帅气的小火苗',
         attacks: [attacks.Tackle, attacks.Fireball]
       },
       Draggle: {
-        position: { x: 800, y: 100 },
+        position: { x: canvas.width / 1.28, y: canvas.height / 5 },
         image: { src: '../assets/images/basics/draggleSprite.png' },
         frames: { max: 4, hold: 30 },
         animate: true,
@@ -149,6 +136,7 @@ export function createCanvas(): void {
       isEnemy: boolean | undefined;
       rotation: number;
       name!: string;
+      isBackground: boolean | undefined;
 
       constructor(
         {
@@ -163,7 +151,8 @@ export function createCanvas(): void {
           rotation = 0,
           isEnemy = false,
           name = '',
-          health
+          health,
+          isBackground,
         }:
           {
             position: { x: number, y: number },
@@ -178,11 +167,13 @@ export function createCanvas(): void {
             isEnemy?: boolean,
             name?: string,
             health?: number
+            isBackground?: boolean
           }
       ) {
         this.position = position
         this.image = new Image()
         this.frames = { ...frames, val: 0, elapsed: 0 }
+        this.isBackground = isBackground
 
         this.image.src = image.src
 
@@ -215,8 +206,10 @@ export function createCanvas(): void {
           this.image.height,
           this.position.x,
           this.position.y,
-          this.image.width / this.frames.max,
-          this.image.height,
+          // this.image.width / this.frames.max,
+          // this.image.height,
+          this.isBackground === undefined ? (this.image.width / this.frames.max) : canvas.width,
+          this.isBackground === undefined ? this.image.height : canvas.height,
         )
         ctx.restore()
         if (!this.animate) return
@@ -232,6 +225,7 @@ export function createCanvas(): void {
       }
     }
 
+    // 怪物类
     class Monster extends Sprite {
       constructor({
         position, velocity, image, frames = { max: 1, hold: 10 }, sprites, animate = false, rotation = 0, isEnemy = false, name, attacks
@@ -288,7 +282,6 @@ export function createCanvas(): void {
               x: this.position.x + movementDistance * 2,
               duration: 0.1,
               onComplete: () => {
-                console.log('剩余生命', recipient.health);
                 // 敌人受击动作
                 gsap.to(healthBar, {
                   // width: this.health - attack.damage + '%'
@@ -332,7 +325,6 @@ export function createCanvas(): void {
               x: recipient.position.x,
               y: recipient.position.y,
               onComplete: () => {
-                console.log('剩余生命', recipient.health);
                 // 敌人受击动作
                 gsap.to(healthBar, {
                   width: recipient.health + '%'
@@ -361,11 +353,15 @@ export function createCanvas(): void {
     // 玩家实例
     const player: Sprite = new Sprite({
       position: {
-        x: canvas.width / 2 - playerImageDown.width / 4 / 2,
-        y: canvas.height / 2 - playerImageDown.height / 2,
+        // 合适的位置{ x: 485, y: 350 }
+        // 终点位置{ x: 1160, y: 750 }
+        // x: canvas.width / 2 - playerImageDown.width / 4 / 2,
+        // y: canvas.height / 2 - playerImageDown.height / 2,
+        x: 485,
+        y: 350
       },
       image: playerImageDown,
-      frames: { max: 4 },
+      frames: { max: 4, hold: 10 },
       sprites: {
         up: playerImageUp,
         down: playerImageDown,
@@ -373,7 +369,6 @@ export function createCanvas(): void {
         right: playerImageRight
       }
     })
-
     // 背景实例
     const background = new Sprite({
       position: {
@@ -383,7 +378,6 @@ export function createCanvas(): void {
       velocity: {},
       image: image
     })
-
     // 前景实例
     const foreground = new Sprite({
       position: {
@@ -393,23 +387,15 @@ export function createCanvas(): void {
       velocity: {},
       image: foregroundImage
     })
-
     // 战斗背景实例
     const battleBackground = new Sprite({
       position: {
         x: 0,
         y: 0
       },
-      image: battleGroundImage
+      image: battleGroundImage,
+      isBackground: true
     })
-
-    // const fire = new Sprite({
-    //   position: {
-    //     x: 280,
-    //     y: 350
-    //   },
-    //   image: fireBallImage
-    // })
 
     collisionMap.forEach((row: number[], i: number) => {
       row.forEach((symbol: number, j: number) => {
@@ -462,6 +448,11 @@ export function createCanvas(): void {
     const battle = {
       initiated: false
     }
+    let battleAnimationId: number
+    let draggle: any
+    let emby: any
+    let renderSprites: Sprite[]
+    let queue: any[]
 
     // 矩形碰撞检查
     function checkRectangularCollision(
@@ -512,7 +503,7 @@ export function createCanvas(): void {
             && overlappingArea > (player.width * player.height) / 2
             && Math.random() < 0.01
           ) {
-            console.log('fight');
+            console.log('战斗开始');
             // 销毁当前的动画循环
             window.cancelAnimationFrame(animationId)
             battle.initiated = true
@@ -542,6 +533,9 @@ export function createCanvas(): void {
       }
 
       if (keys.w.pressed && lastKey === 'w') {
+        if (foreground.position.x > -1430 && foreground.position.x < -1382 && foreground.position.y === -949) {
+          console.log('恭喜您获得了管理员资格，现在可以执行些许管理员权限啦');
+        }
         player.animate = true
         player.image = playerImageUp
         for (let i = 0; i < boundaries.length; i++) {
@@ -558,7 +552,6 @@ export function createCanvas(): void {
               }
             })
           ) {
-            console.log('w');
             moving = false
             break
           }
@@ -586,7 +579,6 @@ export function createCanvas(): void {
               }
             })
           ) {
-            console.log('a');
             moving = false
             break
           }
@@ -614,7 +606,6 @@ export function createCanvas(): void {
               }
             })
           ) {
-            console.log('s');
             moving = false
             break
           }
@@ -642,7 +633,6 @@ export function createCanvas(): void {
               }
             })
           ) {
-            console.log('d');
             moving = false
             break
           }
@@ -654,25 +644,13 @@ export function createCanvas(): void {
         }
       }
     }
-
-    const button = document.createElement('button')
-    button.innerHTML = 'FireBall'
-    // // 攻击说明 - 怪物
-    // document.querySelector('#attacksBox')?.append('button')
-
-    let battleAnimationId: number
-    let draggle: any
-    let emby: any
-    let renderSprites: Sprite[]
-    let queue: any[]
-
+    // 初始化战斗
     function initBattle() {
       (document.querySelector('#userInterface') as HTMLElement).style.display = 'block';
       (document.querySelector('#dialogueBox') as HTMLElement).style.display = 'none';
       (document.querySelector('#enemyHealthyBar') as HTMLElement).style.width = '100%';
       (document.querySelector('#playerHealthyBar') as HTMLElement).style.width = '100%';
       (document.querySelector('#attacksBox') as HTMLElement).replaceChildren();
-
 
       draggle = new Monster(monsters.Draggle)
       emby = new Monster(monsters.Emby)
@@ -735,12 +713,10 @@ export function createCanvas(): void {
           const selectedAttack = attacks[e.currentTarget.innerHTML];
           (document.querySelector('#attackType') as HTMLElement).innerHTML = selectedAttack.type;
           (document.querySelector('#attackType') as HTMLElement).style.color = 'red';
-          console.log('go');
-
         })
       })
     }
-
+    // 战斗动画
     function animateBattle() {
       battleAnimationId = window.requestAnimationFrame(animateBattle)
       battleBackground.draw()
@@ -752,7 +728,7 @@ export function createCanvas(): void {
     }
 
     // 攻击说明 - 玩家
-    document.querySelector('#dialogueBox')?.addEventListener('click', (e: Event) => {      
+    document.querySelector('#dialogueBox')?.addEventListener('click', (e: Event) => {
       if (queue.length > 0) {
         queue[0]()
         queue.shift()
@@ -805,13 +781,13 @@ export function createCanvas(): void {
       }
     })
 
-    // animate()
-    initBattle()
-    animateBattle()
+    animate()
+    // initBattle()
+    // animateBattle()
   } else {
     // 在服务端执行的代码，不应该使用 document 和其他浏览器对象
   }
-  
+
 
 }
 
