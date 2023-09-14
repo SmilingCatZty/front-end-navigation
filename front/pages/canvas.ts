@@ -25,31 +25,10 @@ export function createCanvas(): void {
       },
       FireBall: {
         name: 'FireBall',
-        damage: 25,
+        damage: 50,
         type: 'Fire'
       }
     }
-
-    const monsters = {
-      Emby: {
-        position: { x: 280, y: 325 },
-        image: { src: './img/embySprite.png' },
-        frames: { max: 4, hold: 30 },
-        animate: true,
-        name: 'Emby',
-        attacks: [attacks.Tackle, attacks.Fireball]
-      },
-      Draggle: {
-        position: { x: 800, y: 100 },
-        image: { src: './img/draggleSprite.png' },
-        frames: { max: 4, hold: 30 },
-        animate: true,
-        isEnemy: true,
-        name: 'Draggle',
-        attacks: [attacks.Tackle, attacks.Fireball]
-      }
-    }
-
 
     // 在客户端中执行的代码，可以使用 document 和其他浏览器对象
     const canvas = document.querySelector('canvas') as HTMLCanvasElement
@@ -113,6 +92,31 @@ export function createCanvas(): void {
     //   ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
     // }
 
+    // 怪物对象
+    const monsters: {
+      Emby: { position: { x: number, y: number }, image: HTMLImageElement, frames: { max: number, hold: number }, isEnemy: boolean, animate: boolean, name: string, attacks: any },
+      Draggle: { position: { x: number, y: number }, image: HTMLImageElement, frames: { max: number, hold: number }, isEnemy: boolean, animate: boolean, name: string, attacks: any },
+    } = {
+      Emby: {
+        position: { x: 280, y: 350 },
+        image: { src: '../assets/images/basics/embySprite.png' },
+        frames: { max: 4, hold: 30 },
+        animate: true,
+        isEnemy: false,
+        name: '帅气的你',
+        attacks: [attacks.Tackle, attacks.Fireball]
+      },
+      Draggle: {
+        position: { x: 800, y: 100 },
+        image: { src: '../assets/images/basics/draggleSprite.png' },
+        frames: { max: 4, hold: 30 },
+        animate: true,
+        isEnemy: true,
+        name: '小青虫',
+        attacks: [attacks.Tackle]
+      }
+    }
+
     // 边界类
     class Boundary {
       width: number
@@ -141,7 +145,7 @@ export function createCanvas(): void {
       animate: boolean;
       sprites: any;
       opacity: number;
-      health: number;
+      health!: number;
       isEnemy: boolean | undefined;
       rotation: number;
       name!: string;
@@ -154,11 +158,12 @@ export function createCanvas(): void {
           frames = { max: 1, hold: 10 },
           width,
           height,
-          animate = false,
           sprites,
-          isEnemy = false,
+          animate = false,
           rotation = 0,
-          name = ''
+          isEnemy = false,
+          name = '',
+          health
         }:
           {
             position: { x: number, y: number },
@@ -169,27 +174,31 @@ export function createCanvas(): void {
             height?: number,
             animate?: boolean,
             sprites?: any,
-            isEnemy?: boolean,
             rotation?: number,
-            name?: string
+            isEnemy?: boolean,
+            name?: string,
+            health?: number
           }
       ) {
         this.position = position
-        this.image = image
+        this.image = new Image()
         this.frames = { ...frames, val: 0, elapsed: 0 }
+
+        this.image.src = image.src
 
         this.image.onload = () => {
           this.width = this.image.width / this.frames.max
           this.height = this.image.height
+
+          // this.width = canvas.width
+          // this.height = canvas.height
         }
 
         this.animate = animate
         this.sprites = sprites
         this.opacity = 1
-        this.health = 100
-        this.isEnemy = isEnemy
+
         this.rotation = rotation
-        this.name = name
       }
       // 画
       draw() {
@@ -221,13 +230,40 @@ export function createCanvas(): void {
         }
         // }
       }
+    }
+
+    class Monster extends Sprite {
+      constructor({
+        position, velocity, image, frames = { max: 1, hold: 10 }, sprites, animate = false, rotation = 0, isEnemy = false, name, attacks
+      }: {
+        position: { x: number, y: number }, velocity?: any, image?: any, frames?: any, isEnemy: boolean, name: string, animate?: boolean, sprites?: any, rotation?: number, attacks?: any
+      }) {
+        super({
+          position, velocity, image, frames, sprites, animate, rotation,
+        });
+        this.health = 100
+        this.isEnemy = isEnemy
+        this.name = name
+        // this.attacks = attacks
+      }
+      faint() {
+        console.log(this.name + '挂了');
+        // (document.querySelector('#dialogueBox') as Element as any).style.display = 'block';
+        (document.querySelector('#dialogueBox') as Element).innerHTML = this.name + ' 失败了 ';
+        gsap.to(this.position, {
+          y: this.position.y + 20
+        })
+        gsap.to(this, {
+          opacity: 0
+        })
+      }
       // 攻击
       attack(
         { attack, recipient, renderSprites }
           :
           {
             attack: { name: string, damage: number, type: string },
-            recipient: { position: { x: number, y: number }, opacity: number },
+            recipient: { position: { x: number, y: number }, opacity: number, health: number },
             renderSprites: Sprite[]
           }
       ) {
@@ -237,7 +273,7 @@ export function createCanvas(): void {
         let healthBar = '#enemyHealthyBar'
         if (this.isEnemy) healthBar = '#playerHealthyBar'
 
-        this.health -= attack.damage
+        recipient.health -= attack.damage
 
         switch (attack.name) {
           case 'Tackle':
@@ -252,10 +288,11 @@ export function createCanvas(): void {
               x: this.position.x + movementDistance * 2,
               duration: 0.1,
               onComplete: () => {
-                console.log(this.health);
+                console.log('剩余生命', recipient.health);
                 // 敌人受击动作
                 gsap.to(healthBar, {
-                  width: this.health - attack.damage + '%'
+                  // width: this.health - attack.damage + '%'
+                  width: recipient.health + '%'
                 })
                 gsap.to(recipient.position, {
                   x: recipient.position.x + 10,
@@ -295,10 +332,10 @@ export function createCanvas(): void {
               x: recipient.position.x,
               y: recipient.position.y,
               onComplete: () => {
-                console.log(this.health);
+                console.log('剩余生命', recipient.health);
                 // 敌人受击动作
                 gsap.to(healthBar, {
-                  width: this.health + '%'
+                  width: recipient.health + '%'
                 })
                 gsap.to(recipient.position, {
                   x: recipient.position.x + 10,
@@ -373,37 +410,6 @@ export function createCanvas(): void {
     //   },
     //   image: fireBallImage
     // })
-
-    const draggle = new Sprite({
-      position: {
-        x: 800,
-        y: 100,
-      },
-      image: draggleImage,
-      frames: {
-        max: 4,
-        hold: 30
-      },
-      animate: true,
-      isEnemy: true,
-      name: '小虫子'
-    })
-
-    // 我方实例
-    const emby = new Sprite({
-      position: {
-        x: 280,
-        y: 350,
-      },
-      image: embyImage,
-      frames: {
-        max: 4,
-        hold: 30
-      },
-      animate: true,
-      isEnemy: false,
-      name: '帅气的你'
-    })
 
     collisionMap.forEach((row: number[], i: number) => {
       row.forEach((symbol: number, j: number) => {
@@ -518,8 +524,9 @@ export function createCanvas(): void {
                 gsap.to('#battle-collision', {
                   opacity: 1,
                   duration: 0.4,
+                  // 开启新的动画循环
                   onComplete() {
-                    // 开启新的动画循环
+                    initBattle()
                     animateBattle()
                     gsap.to('#battle-collision', {
                       opacity: 0,
@@ -648,15 +655,94 @@ export function createCanvas(): void {
       }
     }
 
-    const renderSprites: Sprite[] = [draggle, emby]
     const button = document.createElement('button')
     button.innerHTML = 'FireBall'
-    // 攻击说明 - 怪物
-    document.querySelector('#attacksBox')?.append('button')
+    // // 攻击说明 - 怪物
+    // document.querySelector('#attacksBox')?.append('button')
 
-    async function animateBattle() {
-      // console.log(1);
-      window.requestAnimationFrame(animateBattle)
+    let battleAnimationId: number
+    let draggle: any
+    let emby: any
+    let renderSprites: Sprite[]
+    let queue: any[]
+
+    function initBattle() {
+      (document.querySelector('#userInterface') as HTMLElement).style.display = 'block';
+      (document.querySelector('#dialogueBox') as HTMLElement).style.display = 'none';
+      (document.querySelector('#enemyHealthyBar') as HTMLElement).style.width = '100%';
+      (document.querySelector('#playerHealthyBar') as HTMLElement).style.width = '100%';
+      (document.querySelector('#attacksBox') as HTMLElement).replaceChildren();
+
+
+      draggle = new Monster(monsters.Draggle)
+      emby = new Monster(monsters.Emby)
+      renderSprites = [draggle, emby]
+      queue = []
+
+      // emby.attacks.forEach((attack: any) => {
+      //   const button = document.createElement('button')
+      //   button.innerHTML = attack.name
+      //   document.querySelector('#attacksBox')?.append(button)
+      // });
+
+      // 战斗点击操作
+      document.querySelectorAll('button').forEach((button) => {
+        button.addEventListener('click', (e: any) => {
+          const selectedAttack = attacks[e.currentTarget.innerHTML]
+          emby.attack({
+            attack: selectedAttack,
+            recipient: draggle,
+            renderSprites
+          })
+
+          if (draggle.health <= 0) {
+            queue.push(() => {
+              draggle.faint()
+            })
+            queue.push(() => {
+              gsap.to('#battle-collision', {
+                opacity: 1,
+                onComplete: (() => {
+                  cancelAnimationFrame(battleAnimationId)
+                  animate();
+                  (document.querySelector('#userInterface') as HTMLElement).style.display = 'none';
+                  gsap.to('#battle-collision', {
+                    opacity: 0
+                  })
+                  battle.initiated = false
+                })
+              })
+            })
+            return
+          }
+
+          queue.push(() => {
+            draggle.attack({
+              attack: attacks.Tackle,
+              recipient: emby,
+              renderSprites
+            })
+          })
+          if (emby.health <= 0) {
+            queue.push(() => {
+              emby.faint()
+            })
+            return
+          }
+        })
+        // 战斗攻击方式
+        button.addEventListener('mouseenter', (e: any) => {
+          const selectedAttack = attacks[e.currentTarget.innerHTML];
+          (document.querySelector('#attackType') as HTMLElement).innerHTML = selectedAttack.type;
+          (document.querySelector('#attackType') as HTMLElement).style.color = 'red';
+          console.log('go');
+
+        })
+      })
+    }
+
+    function animateBattle() {
+      battleAnimationId = window.requestAnimationFrame(animateBattle)
       battleBackground.draw()
       if (renderSprites.length !== 0) {
         renderSprites.forEach((sprite: Sprite) => {
@@ -664,36 +750,16 @@ export function createCanvas(): void {
         })
       }
     }
-    // animate()
-    animateBattle()
 
-    const queue: any[] = []
-
-    document.querySelectorAll('button').forEach((button) => {
-      button.addEventListener('click', (e: any) => {
-        console.log('点击', e.currentTarget.innerHTML);
-        const selectedAttack = attacks[e.currentTarget.innerHTML]
-        emby.attack({
-          attack: selectedAttack,
-          recipient: draggle,
-          renderSprites
-        })
-        queue.push(() => {
-          draggle.attack({
-            attack: attacks.Tackle,
-            recipient: emby,
-            renderSprites
-          })
-        })
-      })
-    })
     // 攻击说明 - 玩家
-    document.querySelector('#dialogueBox')?.addEventListener('click', (e: Event) => {
+    document.querySelector('#dialogueBox')?.addEventListener('click', (e: Event) => {      
       if (queue.length > 0) {
         queue[0]()
         queue.shift()
       }
-      (e.currentTarget as Element as any).style.display = 'none'
+      if (draggle.health > 0) {
+        (e.currentTarget as Element as any).style.display = 'none'
+      }
     })
 
 
@@ -738,9 +804,14 @@ export function createCanvas(): void {
           break
       }
     })
+
+    // animate()
+    initBattle()
+    animateBattle()
   } else {
     // 在服务端执行的代码，不应该使用 document 和其他浏览器对象
   }
+  
 
 }
 

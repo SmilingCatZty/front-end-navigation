@@ -3,39 +3,43 @@
     <div class="home-canvas">
       <div id="battle-collision" class="battle-collision" />
       <canvas></canvas>
-      <!-- 游戏面板 -->
-      <div id="userInterface">
-        <!-- 敌人状态 -->
-        <div class="battle-draggle">
-          <h1 class="draggle-name">Draggle</h1>
-          <div class="draggle-status">
-            <div class="draggle-skill"></div>
-            <div id="enemyHealthyBar" class="draggle-blood"></div>
+      <!-- 战斗内容 -->
+      <div id="userInterface" class="userInterface">
+        <!-- 游戏面板 -->
+        <div id="userInterface">
+          <!-- 敌人状态 -->
+          <div class="battle-draggle">
+            <h1 class="draggle-name">骆鑫玥</h1>
+            <div class="draggle-status">
+              <div class="draggle-skill"></div>
+              <div id="enemyHealthyBar" class="draggle-blood"></div>
+            </div>
+          </div>
+          <!-- 玩家状态 -->
+          <div class="battle-emby">
+            <h1 class="emby-name">周天阳</h1>
+            <div class="emby-status">
+              <div class="emby-skill"></div>
+              <div id="playerHealthyBar" class="emby-blood"></div>
+            </div>
           </div>
         </div>
-        <!-- 玩家状态 -->
-        <div class="battle-emby">
-          <h1 class="emby-name">Emby</h1>
-          <div class="emby-status">
-            <div class="emby-skill"></div>
-            <div id="playerHealthyBar" class="emby-blood"></div>
+        <!-- 技能栏 -->
+        <div id="battle-skill" class="battle-skill">
+          <div id="dialogueBox" class="skill-name">sjs</div>
+          <div id="attacksBox" class="skill-name">sjs</div>
+          <div class="skill-list">
+            <button>Tackle</button>
+            <button>FireBall</button>
+            <!-- <button>Attack3</button>
+            <button>Attack4</button> -->
+          </div>
+          <div id="attackType" class="skill-fight">
+            <h1>Attack Type</h1>
           </div>
         </div>
       </div>
-      <!-- 技能栏 -->
-      <div id="battle-skill" class="battle-skill">
-        <div id="dialogueBox" class="skill-name">sjs</div>
-        <div id="attacksBox" class="skill-name">sjs</div>
-        <div class="skill-list">
-          <button>Tackle</button>
-          <button>FireBall</button>
-          <!-- <button>Attack3</button>
-          <button>Attack4</button> -->
-        </div>
-        <div class="skill-fight">
-          <h1>Attack Type</h1>
-        </div>
-      </div>
+
     </div>
     <van-button type="success" @click="success">开启编辑模式</van-button>
     <NuxtLink class="navigation-link" to="/tools">前往工具页</NuxtLink>
@@ -91,13 +95,17 @@ onMounted(async () => {
       z-index: 10;
     }
 
+    .userInterface{
+      display: none;
+    }
+
     .battle-draggle {
       position: absolute;
       width: 250px;
       height: 40px;
       background-color: #fff;
       top: 50px;
-      left: 50px;
+      right: 50px;
       border: 4px solid black;
       font-size: 16px;
 
@@ -131,7 +139,7 @@ onMounted(async () => {
       height: 40px;
       background-color: #fff;
       top: 250px;
-      right: 50px;
+      left: 50px;
       border: 4px solid black;
       font-size: 16px;
 
