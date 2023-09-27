@@ -137,6 +137,8 @@ export function createCanvas(): void {
       rotation: number;
       name!: string;
       isBackground: boolean | undefined;
+      haveKey: boolean;
+      moving: boolean;
 
       constructor(
         {
@@ -153,6 +155,8 @@ export function createCanvas(): void {
           name = '',
           health,
           isBackground,
+          haveKey = false,
+          moving = false,
         }:
           {
             position: { x: number, y: number },
@@ -166,8 +170,10 @@ export function createCanvas(): void {
             rotation?: number,
             isEnemy?: boolean,
             name?: string,
-            health?: number
-            isBackground?: boolean
+            health?: number,
+            isBackground?: boolean,
+            haveKey?: boolean,
+            moving?: boolean
           }
       ) {
         this.position = position
@@ -190,6 +196,8 @@ export function createCanvas(): void {
         this.opacity = 1
 
         this.rotation = rotation
+        this.haveKey = haveKey
+        this.moving = moving
       }
       // 画
       draw() {
@@ -249,7 +257,14 @@ export function createCanvas(): void {
         })
         gsap.to(this, {
           opacity: 0
-        })
+        });
+        setTimeout(() => {
+          (document.querySelector('#voiceover') as HTMLElement).style.display = 'block';
+          (document.querySelector('#popup-key') as HTMLElement).style.display = "block";
+          (document.querySelector('#voiceover') as HTMLElement).innerHTML = "恭喜你获得了'世界密码的钥匙'";
+          player.moving = false
+          player.haveKey = true
+        }, 2000);
       }
       // 攻击
       attack(
@@ -367,7 +382,8 @@ export function createCanvas(): void {
         down: playerImageDown,
         left: playerImageLeft,
         right: playerImageRight
-      }
+      },
+      haveKey: false
     })
     // 背景实例
     const background = new Sprite({
@@ -532,9 +548,12 @@ export function createCanvas(): void {
         }
       }
 
-      if (keys.w.pressed && lastKey === 'w') {
+      if (keys.w.pressed && lastKey === 'w' && player.moving) {
         if (foreground.position.x > -1430 && foreground.position.x < -1382 && foreground.position.y === -949) {
-          console.log('恭喜您获得了管理员资格，现在可以执行些许管理员权限啦');
+          if (player.haveKey) {
+            useRuntimeConfig().public.editable = true
+            console.log('恭喜您获得了管理员资格，现在可以执行些许管理员权限啦');
+          }
         }
         player.animate = true
         player.image = playerImageUp
@@ -562,7 +581,7 @@ export function createCanvas(): void {
           })
         }
       }
-      if (keys.a.pressed && lastKey === 'a') {
+      if (keys.a.pressed && lastKey === 'a' && player.moving) {
         player.animate = true
         player.image = playerImageLeft
         for (let i = 0; i < boundaries.length; i++) {
@@ -589,7 +608,7 @@ export function createCanvas(): void {
           })
         }
       }
-      if (keys.s.pressed && lastKey === 's') {
+      if (keys.s.pressed && lastKey === 's' && player.moving) {
         player.animate = true
         player.image = playerImageDown
         for (let i = 0; i < boundaries.length; i++) {
@@ -616,7 +635,7 @@ export function createCanvas(): void {
           })
         }
       }
-      if (keys.d.pressed && lastKey === 'd') {
+      if (keys.d.pressed && lastKey === 'd' && player.moving) {
         player.animate = true
         player.image = playerImageRight
         for (let i = 0; i < boundaries.length; i++) {
@@ -778,6 +797,44 @@ export function createCanvas(): void {
         case 'd':
           keys.d.pressed = false
           break
+      }
+    })
+    let clickTime: number = 0
+
+    // 监听旁白通告
+    document.querySelector('#voiceover')?.addEventListener(('click'), () => {
+      let text: string = ''
+      switch (clickTime) {
+        case 0:
+          text = '在这里'
+          break;
+        case 1:
+          text = '你会经历惨烈的战斗'
+          break;
+        case 2:
+          text = '穿越漫长的道路'
+          break;
+        case 3:
+          text = '在历经沧桑之后'
+          break;
+        case 4:
+          text = '你会得到解开世界密码的钥匙'
+          break;
+        case 5:
+          text = '去吧'
+          break;
+        case 6:
+          text = '去成为世界的主宰'
+          player.moving = true
+          break;
+      }
+      if (clickTime !== 7) {
+        (document.querySelector('#voiceover') as Element).innerHTML = text;
+        clickTime++
+      } else {
+        (document.querySelector('#popup-key') as HTMLElement).style.display = 'none';
+        (document.querySelector('#voiceover') as HTMLElement).style.display = 'none'
+        player.moving = true
       }
     })
 
